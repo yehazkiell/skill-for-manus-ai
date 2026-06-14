@@ -28,6 +28,7 @@ class CreditCache:
 
     def __init__(self, ttl: int = CACHE_TTL_SECONDS):
         self._store: dict[str, tuple[Any, float]] = {}
+        self._skill_keys: dict[str, set[str]] = {}
         self._ttl = ttl
         self._hits = 0
         self._misses = 0
@@ -54,14 +55,15 @@ class CreditCache:
     def put(self, skill_name: str, context: dict[str, Any], value: Any) -> None:
         key = self._hash_key(skill_name, context)
         self._store[key] = (value, time.time())
+        self._skill_keys.setdefault(skill_name, set()).add(key)
 
     def invalidate(self, skill_name: Optional[str] = None) -> None:
         if skill_name is None:
             self._store.clear()
+            self._skill_keys.clear()
         else:
-            to_delete = [k for k in self._store if skill_name in k]
-            for k in to_delete:
-                del self._store[k]
+            for k in self._skill_keys.pop(skill_name, set()):
+                self._store.pop(k, None)
 
     @property
     def hit_rate(self) -> float:
@@ -109,7 +111,7 @@ class CreditManager:
 
     @property
     def is_low(self) -> bool:
-        return (self.remaining / self._config.daily_limit) < self._config.warning_threshold
+        return (self.remaining / self._config.daily_limit) < self._config.warning_threshold if self._config.daily_limit else True
 
     # --- recording ---
 

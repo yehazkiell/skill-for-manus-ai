@@ -27,7 +27,7 @@ class ComplexityAnalyzer:
     COMPLEX_SIGNALS = [
         r"\b(architect|design pattern|microservice|distributed)\b",
         r"\b(security|vulnerability|exploit|penetration)\b",
-        r"\b(optimize|performance|scalab|concurrent)\b",
+        r"\b(optimize|performance|scalab\w*|concurrent)\b",
         r"\b(refactor|migration|legacy|rewrite)\b",
         r"\b(machine learning|neural|deep learning|training)\b",
     ]

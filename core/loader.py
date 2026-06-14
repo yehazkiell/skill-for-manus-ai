@@ -26,13 +26,12 @@ class SkillRegistry:
 
     def load_all(self) -> int:
         """Discover and load every *.yaml skill file under skills_dir."""
-        count = 0
         for yaml_path in sorted(self._dir.rglob("*.yaml")):
             try:
                 self._load_one(yaml_path)
-                count += 1
             except Exception as exc:
                 print(f"[WARN] Skipping {yaml_path.name}: {exc}", file=sys.stderr)
+        count = len(self._skills)
         # Register all in router
         for cfg in self._skills.values():
             self._router.register_skill(cfg)
@@ -96,8 +95,7 @@ class SkillRegistry:
             raise ValueError(f"Unknown skill: {skill_name}")
 
         # Route for optimal tier
-        if credit_manager:
-            self._router._credit_mgr = credit_manager
+        self._router._credit_mgr = credit_manager
         decision: RouteDecision = self._router.route(
             task=context.get("task", ""),
             context=context,
